@@ -15,7 +15,6 @@ body {
   height: 100vh;
 }
 
-/* HEADER */
 header {
   padding: 15px;
   background: #1e293b;
@@ -23,7 +22,6 @@ header {
   font-weight: bold;
 }
 
-/* CHAT AREA */
 #chat {
   flex: 1;
   overflow-y: auto;
@@ -33,12 +31,10 @@ header {
   gap: 10px;
 }
 
-/* MESSAGES */
 .msg {
   padding: 12px;
   border-radius: 12px;
   max-width: 80%;
-  line-height: 1.4;
 }
 
 .user {
@@ -51,25 +47,21 @@ header {
   align-self: flex-start;
 }
 
-/* OPTIONS */
 .option {
   background: #334155;
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
-  margin-top: 5px;
 }
 
 .option:hover {
   background: #475569;
 }
 
-/* INPUT */
 #inputBox {
   display: flex;
   padding: 10px;
   background: #1e293b;
-  border-top: 1px solid #334155;
 }
 
 input {
@@ -87,7 +79,6 @@ button {
   border-radius: 8px;
   background: #22c55e;
   color: white;
-  cursor: pointer;
 }
 </style>
 </head>
@@ -105,7 +96,10 @@ button {
 
 <script>
 
-// ADD MESSAGE
+// ===== STATE =====
+let stage = "start"; // start → chatting → deep
+
+// ===== UI =====
 function addMessage(text, type) {
   const chat = document.getElementById("chat");
 
@@ -117,65 +111,98 @@ function addMessage(text, type) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// RANDOM PICK
+// ===== HELPERS =====
 function randomPick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// BEST REPLY
 function pickBestReply(replies) {
   return replies.sort((a, b) => a.length - b.length)[0];
 }
 
-// COACH
-function getCoaching(msg) {
-  msg = msg.toLowerCase();
-
-  if (msg.includes("ignore")) return "Don’t chase. Stay calm.";
-  if (msg.includes("pulling away")) return "Give space, don’t pressure.";
-  if (msg.includes("love")) return "Be real, don’t overdo it.";
-  if (msg.includes("angry")) return "Control your reaction.";
-  
-  return "Stay calm and simple.";
+// ===== COACH =====
+function getCoaching(stage) {
+  if (stage === "start") return "Start simple. Don’t try too hard.";
+  if (stage === "chatting") return "Keep it natural. Don’t overthink.";
+  if (stage === "deep") return "Stay calm. Don’t react emotionally.";
+  return "Stay relaxed.";
 }
 
-// MAIN BRAIN
+// ===== BRAIN =====
 function generateSmartResponse(msg) {
   msg = msg.toLowerCase();
 
-  if (msg.includes("hi") || msg.includes("hello")) {
+  // START STAGE
+  if (stage === "start") {
+    if (msg.includes("hi") || msg.includes("hello")) {
+      stage = "chatting";
+      return {
+        advice: "Keep it simple and friendly.",
+        replies: [
+          "Hey, how are you?",
+          "Hi, what’s up?",
+          "Hey 😊"
+        ]
+      };
+    }
+  }
+
+  // CHAT STAGE
+  if (stage === "chatting") {
+
+    // detect deeper topics
+    if (
+      msg.includes("love") ||
+      msg.includes("ignore") ||
+      msg.includes("distance") ||
+      msg.includes("problem") ||
+      msg.includes("pulling away")
+    ) {
+      stage = "deep";
+    }
+
     return {
-      advice: "Keep it light.",
+      advice: "Keep conversation flowing.",
       replies: [
-        randomPick(["Hey", "Hi", "Hey you"]),
-        randomPick(["What’s up?", "You good?", "How you been?"]),
-        randomPick(["Nice hearing from you", "What’s going on", "You disappeared 😄"])
+        randomPick(["Haha yeah", "That’s interesting", "I get you"]),
+        randomPick(["What have you been up to?", "Tell me more", "How was your day?"]),
+        randomPick(["You seem chill", "I like your vibe", "You’re easy to talk to"])
       ]
     };
   }
 
-  if (msg.includes("pulling away") || msg.includes("distance")) {
+  // DEEP STAGE
+  if (stage === "deep") {
     return {
-      advice: "Don’t chase. Stay calm.",
+      advice: "Stay calm and don’t overreact.",
       replies: [
-        randomPick(["You seem distant lately", "Everything okay?", "You’ve been different"]),
-        randomPick(["No pressure from me", "Just checking in", "Keeping it simple"]),
-        randomPick(["We’ll talk when ready", "I’m here", "No stress"])
+        randomPick([
+          "I understand where you're coming from",
+          "Let’s not overcomplicate it",
+          "We can sort it out"
+        ]),
+        randomPick([
+          "I’m just keeping things simple",
+          "No pressure from me",
+          "Let’s stay calm"
+        ]),
+        randomPick([
+          "We’ll talk it through",
+          "It’s not that serious",
+          "We’re good"
+        ])
       ]
     };
   }
 
+  // DEFAULT
   return {
-    advice: "Stay calm.",
-    replies: [
-      randomPick(["Alright", "Okay", "I hear you"]),
-      randomPick(["Let’s keep it simple", "No stress", "We’ll talk"]),
-      randomPick(["Relax", "It’s fine", "We’ll sort it"])
-    ]
+    advice: "Stay natural.",
+    replies: ["Alright", "Okay", "I hear you"]
   };
 }
 
-// SEND
+// ===== MAIN SEND =====
 function send() {
   const input = document.getElementById("input");
   const text = input.value;
@@ -186,7 +213,7 @@ function send() {
   input.value = "";
 
   const result = generateSmartResponse(text);
-  const coach = getCoaching(text);
+  const coach = getCoaching(stage);
   const best = pickBestReply(result.replies);
 
   // Coach
@@ -194,7 +221,7 @@ function send() {
     addMessage("Coach: " + coach, "bot");
   }, 300);
 
-  // Best reply
+  // Best Reply
   setTimeout(() => {
     addMessage("Best: " + best, "bot");
   }, 600);
@@ -219,7 +246,6 @@ function send() {
 
       chat.appendChild(option);
     });
-
   }, 900);
 }
 
