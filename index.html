@@ -5,103 +5,245 @@
 <title>Love AI</title>
 
 <style>
-body { font-family: Arial; background:#0f172a; color:white; padding:10px; }
-input { width:70%; padding:10px; border-radius:6px; border:none; }
-button { padding:10px; border:none; background:#22c55e; color:white; border-radius:6px; }
-.option { background:#1e293b; margin:6px 0; padding:10px; border-radius:6px; cursor:pointer; }
-.option:hover { background:#334155; }
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+}
+
+header {
+  padding: 15px;
+  background: #1e293b;
+  text-align: center;
+  font-weight: bold;
+}
+
+#chat {
+  height: 75vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.msg {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 75%;
+}
+
+.user {
+  background: #2563eb;
+  margin-left: auto;
+  text-align: right;
+}
+
+.bot {
+  background: #1e293b;
+}
+
+.option {
+  background: #334155;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.option:hover {
+  background: #475569;
+}
+
+#inputBox {
+  display: flex;
+  padding: 10px;
+  background: #1e293b;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+button {
+  margin-left: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
-<h3>💬 Love AI</h3>
-
-<input id="input" placeholder="Type message..." />
-<button onclick="send()">Send</button>
+<header>💬 Love AI Assistant</header>
 
 <div id="chat"></div>
 
-<script>
-function send() {
-  const input = document.getElementById("input").value;
-  if (!input) return;
+<div id="inputBox">
+  <input id="input" placeholder="Type message..." />
+  <button onclick="send()">Send</button>
+</div>
 
-  const result = generateSmartResponse(input);
-  display(result);
+<script>
+
+// ADD MESSAGE
+function addMessage(text, type) {
+  const chat = document.getElementById("chat");
+
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  div.innerText = text;
+
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 }
 
+// RANDOM PICK
+function randomPick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// SMART RESPONSE
 function generateSmartResponse(msg) {
   msg = msg.toLowerCase();
 
-  // SIMPLE GREETINGS
+  // GREETINGS
   if (msg.includes("hi") || msg.includes("hello")) {
     return {
-      advice: "Keep it simple and friendly.",
+      advice: "Keep it light and natural.",
       replies: [
-        "Hey, how are you?",
-        "Hi, what’s up?",
-        "Hey there"
+        randomPick(["Hey", "Hey you", "Hi"]),
+        randomPick(["What’s up?", "How you been?", "You good?"]),
+        randomPick(["Nice hearing from you", "What’s going on", "You disappeared 😄"])
       ]
     };
   }
 
-  // IGNORING / DRAMA
+  // IGNORING
   if (msg.includes("ignore")) {
     return {
-      advice: "Stay calm. Don’t chase. Let her come.",
+      advice: "Stay calm, don’t chase too much.",
       replies: [
-        "I’m not ignoring, just been busy.",
-        "Relax, I needed some time.",
-        "We’ll talk, no stress."
+        randomPick([
+          "I’ve just been a bit busy",
+          "Not ignoring you, just needed time",
+          "Been off for a bit"
+        ]),
+        randomPick([
+          "Relax, nothing serious",
+          "Don’t overthink it",
+          "You’re reading too much into it"
+        ]),
+        randomPick([
+          "We’ll talk properly later",
+          "I’ll explain when we talk",
+          "No stress, we’ll sort it"
+        ])
       ]
     };
   }
 
-  // LOVE QUESTIONS
+  // LOVE
   if (msg.includes("love")) {
     return {
-      advice: "Be honest but don’t overdo it.",
+      advice: "Be honest but not too intense.",
       replies: [
-        "I care about you, I just don’t rush things.",
-        "You matter to me, just keeping it simple.",
-        "I’m here, just not loud about it."
+        randomPick([
+          "I do care about you",
+          "You matter to me",
+          "I’m here for you"
+        ]),
+        randomPick([
+          "I just don’t say too much",
+          "I’m not loud with it",
+          "I keep things simple"
+        ]),
+        randomPick([
+          "But yeah, it’s real",
+          "Just understand me a bit",
+          "It’s not fake"
+        ])
       ]
     };
   }
 
-  // ANGER / ARGUMENT
+  // ANGER
   if (msg.includes("angry") || msg.includes("mad")) {
     return {
-      advice: "Don’t react fast. Stay calm and controlled.",
+      advice: "Don’t react fast. Stay calm.",
       replies: [
-        "Let’s not make it bigger than it is.",
-        "I hear you, let’s keep it calm.",
-        "No need to argue, we’ll sort it."
+        randomPick([
+          "Let’s not make it bigger than it is",
+          "I hear you, let’s stay calm",
+          "No need to argue"
+        ]),
+        randomPick([
+          "We’ll figure it out",
+          "It’s not that serious",
+          "Relax a bit"
+        ]),
+        randomPick([
+          "We’ll talk properly",
+          "Give it a moment",
+          "We’re good"
+        ])
       ]
     };
   }
 
-  // DEFAULT (SMART FALLBACK)
+  // DEFAULT
   return {
-    advice: "Stay calm, be clear, don’t overreact.",
+    advice: "Stay calm and don’t overcomplicate.",
     replies: [
-      "Alright, I hear you.",
-      "Let’s keep it simple.",
-      "No stress, we’ll talk."
+      randomPick(["Alright", "I hear you", "Okay"]),
+      randomPick(["Let’s keep it simple", "No stress", "We’ll sort it"]),
+      randomPick(["We’ll talk", "It’s fine", "Relax"])
     ]
   };
 }
 
-function display(data) {
-  let html = `<p><b>Advice:</b> ${data.advice}</p>`;
+// SEND MESSAGE
+function send() {
+  const input = document.getElementById("input");
+  const text = input.value;
 
-  data.replies.forEach(r => {
-    html += `<div class="option">${r}</div>`;
-  });
+  if (!text) return;
 
-  document.getElementById("chat").innerHTML = html;
+  addMessage(text, "user");
+  input.value = "";
+
+  const result = generateSmartResponse(text);
+
+  // show advice
+  setTimeout(() => {
+    addMessage("Advice: " + result.advice, "bot");
+
+    // show reply options
+    result.replies.forEach(reply => {
+      const chat = document.getElementById("chat");
+
+      const option = document.createElement("div");
+      option.className = "option";
+      option.innerText = reply;
+
+      option.onclick = () => {
+        addMessage(reply, "user");
+        option.remove();
+      };
+
+      chat.appendChild(option);
+    });
+
+  }, 400);
 }
+
 </script>
 
 </body>
