@@ -3,15 +3,15 @@ export default async function handler(req, res) {
     const { message } = req.body;
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+      "https://router.huggingface.co/hf-inference/models/HuggingFaceH4/zephyr-7b-beta",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.HF_TOKEN}`, // 🔐 SECURE
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          inputs: `You are Aziash AI, a calm, smart, human-like love coach. Speak naturally and help with relationships.\nUser: ${message}\nAI:`,
+          inputs: `You are Aziash AI, a calm, smart love coach. Speak naturally.\nUser: ${message}\nAI:`,
           options: { wait_for_model: true },
           parameters: {
             temperature: 0.7,
@@ -46,4 +46,4 @@ export default async function handler(req, res) {
     console.error(error);
     res.status(500).json({ reply: "Server error" });
   }
-        }
+}
