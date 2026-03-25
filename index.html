@@ -6,12 +6,16 @@
 
 <style>
 body {
-  font-family: Arial;
+  margin: 0;
+  font-family: Arial, sans-serif;
   background: #0f172a;
   color: white;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
+/* HEADER */
 header {
   padding: 15px;
   background: #1e293b;
@@ -19,50 +23,58 @@ header {
   font-weight: bold;
 }
 
+/* CHAT AREA */
 #chat {
-  height: 75vh;
+  flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
+/* MESSAGES */
 .msg {
-  margin: 8px 0;
-  padding: 10px;
-  border-radius: 10px;
-  max-width: 75%;
+  padding: 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  line-height: 1.4;
 }
 
 .user {
   background: #2563eb;
-  margin-left: auto;
-  text-align: right;
+  align-self: flex-end;
 }
 
 .bot {
   background: #1e293b;
+  align-self: flex-start;
 }
 
+/* OPTIONS */
 .option {
   background: #334155;
-  padding: 8px;
-  margin-top: 5px;
-  border-radius: 6px;
+  padding: 10px;
+  border-radius: 8px;
   cursor: pointer;
+  margin-top: 5px;
 }
 
 .option:hover {
   background: #475569;
 }
 
+/* INPUT */
 #inputBox {
   display: flex;
   padding: 10px;
   background: #1e293b;
+  border-top: 1px solid #334155;
 }
 
 input {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
   border: none;
   outline: none;
@@ -70,7 +82,7 @@ input {
 
 button {
   margin-left: 10px;
-  padding: 10px;
+  padding: 12px;
   border: none;
   border-radius: 8px;
   background: #22c55e;
@@ -87,7 +99,7 @@ button {
 <div id="chat"></div>
 
 <div id="inputBox">
-  <input id="input" placeholder="Type message..." />
+  <input id="input" placeholder="Type your situation..." />
   <button onclick="send()">Send</button>
 </div>
 
@@ -110,106 +122,60 @@ function randomPick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// SMART RESPONSE
+// BEST REPLY
+function pickBestReply(replies) {
+  return replies.sort((a, b) => a.length - b.length)[0];
+}
+
+// COACH
+function getCoaching(msg) {
+  msg = msg.toLowerCase();
+
+  if (msg.includes("ignore")) return "Don’t chase. Stay calm.";
+  if (msg.includes("pulling away")) return "Give space, don’t pressure.";
+  if (msg.includes("love")) return "Be real, don’t overdo it.";
+  if (msg.includes("angry")) return "Control your reaction.";
+  
+  return "Stay calm and simple.";
+}
+
+// MAIN BRAIN
 function generateSmartResponse(msg) {
   msg = msg.toLowerCase();
 
-  // GREETINGS
   if (msg.includes("hi") || msg.includes("hello")) {
     return {
-      advice: "Keep it light and natural.",
+      advice: "Keep it light.",
       replies: [
-        randomPick(["Hey", "Hey you", "Hi"]),
-        randomPick(["What’s up?", "How you been?", "You good?"]),
+        randomPick(["Hey", "Hi", "Hey you"]),
+        randomPick(["What’s up?", "You good?", "How you been?"]),
         randomPick(["Nice hearing from you", "What’s going on", "You disappeared 😄"])
       ]
     };
   }
 
-  // IGNORING
-  if (msg.includes("ignore")) {
+  if (msg.includes("pulling away") || msg.includes("distance")) {
     return {
-      advice: "Stay calm, don’t chase too much.",
+      advice: "Don’t chase. Stay calm.",
       replies: [
-        randomPick([
-          "I’ve just been a bit busy",
-          "Not ignoring you, just needed time",
-          "Been off for a bit"
-        ]),
-        randomPick([
-          "Relax, nothing serious",
-          "Don’t overthink it",
-          "You’re reading too much into it"
-        ]),
-        randomPick([
-          "We’ll talk properly later",
-          "I’ll explain when we talk",
-          "No stress, we’ll sort it"
-        ])
+        randomPick(["You seem distant lately", "Everything okay?", "You’ve been different"]),
+        randomPick(["No pressure from me", "Just checking in", "Keeping it simple"]),
+        randomPick(["We’ll talk when ready", "I’m here", "No stress"])
       ]
     };
   }
 
-  // LOVE
-  if (msg.includes("love")) {
-    return {
-      advice: "Be honest but not too intense.",
-      replies: [
-        randomPick([
-          "I do care about you",
-          "You matter to me",
-          "I’m here for you"
-        ]),
-        randomPick([
-          "I just don’t say too much",
-          "I’m not loud with it",
-          "I keep things simple"
-        ]),
-        randomPick([
-          "But yeah, it’s real",
-          "Just understand me a bit",
-          "It’s not fake"
-        ])
-      ]
-    };
-  }
-
-  // ANGER
-  if (msg.includes("angry") || msg.includes("mad")) {
-    return {
-      advice: "Don’t react fast. Stay calm.",
-      replies: [
-        randomPick([
-          "Let’s not make it bigger than it is",
-          "I hear you, let’s stay calm",
-          "No need to argue"
-        ]),
-        randomPick([
-          "We’ll figure it out",
-          "It’s not that serious",
-          "Relax a bit"
-        ]),
-        randomPick([
-          "We’ll talk properly",
-          "Give it a moment",
-          "We’re good"
-        ])
-      ]
-    };
-  }
-
-  // DEFAULT
   return {
-    advice: "Stay calm and don’t overcomplicate.",
+    advice: "Stay calm.",
     replies: [
-      randomPick(["Alright", "I hear you", "Okay"]),
-      randomPick(["Let’s keep it simple", "No stress", "We’ll sort it"]),
-      randomPick(["We’ll talk", "It’s fine", "Relax"])
+      randomPick(["Alright", "Okay", "I hear you"]),
+      randomPick(["Let’s keep it simple", "No stress", "We’ll talk"]),
+      randomPick(["Relax", "It’s fine", "We’ll sort it"])
     ]
   };
 }
 
-// SEND MESSAGE
+// SEND
 function send() {
   const input = document.getElementById("input");
   const text = input.value;
@@ -220,18 +186,31 @@ function send() {
   input.value = "";
 
   const result = generateSmartResponse(text);
+  const coach = getCoaching(text);
+  const best = pickBestReply(result.replies);
 
-  // show advice
+  // Coach
   setTimeout(() => {
-    addMessage("Advice: " + result.advice, "bot");
+    addMessage("Coach: " + coach, "bot");
+  }, 300);
 
-    // show reply options
+  // Best reply
+  setTimeout(() => {
+    addMessage("Best: " + best, "bot");
+  }, 600);
+
+  // Options
+  setTimeout(() => {
     result.replies.forEach(reply => {
       const chat = document.getElementById("chat");
 
       const option = document.createElement("div");
       option.className = "option";
       option.innerText = reply;
+
+      if (reply === best) {
+        option.style.border = "2px solid #22c55e";
+      }
 
       option.onclick = () => {
         addMessage(reply, "user");
@@ -241,7 +220,7 @@ function send() {
       chat.appendChild(option);
     });
 
-  }, 400);
+  }, 900);
 }
 
 </script>
