@@ -1,12 +1,17 @@
 export default async function handler(req, res) {
   try {
-    // ✅ Fix body parsing (important for Vercel)
+    console.log("ENV TOKEN:", process.env.HF_TOKEN);
+
     const { message } = typeof req.body === "string"
       ? JSON.parse(req.body)
       : req.body;
 
     if (!message) {
       return res.status(400).json({ reply: "No message provided" });
+    }
+
+    if (!process.env.HF_TOKEN) {
+      return res.status(500).json({ reply: "Missing HF_TOKEN" });
     }
 
     const response = await fetch(
@@ -18,38 +23,27 @@ export default async function handler(req, res) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          inputs: `You are Aziash AI, a calm, smart love coach. Speak naturally.\nUser: ${message}\nAI:`,
-          options: { wait_for_model: true },
-          parameters: {
-            temperature: 0.7,
-            max_new_tokens: 120
-          }
+          inputs: `You are Aziash AI, a love coach.\nUser: ${message}\nAI:`,
+          options: { wait_for_model: true }
         })
       }
     );
 
     const data = await response.json();
-    console.log("HF:", data);
+    console.log("HF RESPONSE:", data);
 
-    let reply = "";
-
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      reply = data[0].generated_text;
-    } else if (data?.generated_text) {
-      reply = data.generated_text;
-    } else if (data?.error) {
-      reply = "AI is waking up… try again.";
-    } else {
-      reply = "No response yet, try again.";
+    if (data.error) {
+      return res.status(200).json({ reply: "HF ERROR: " + data.error });
     }
 
-    // Clean output
+    let reply = data[0]?.generated_text || "No response";
+
     reply = reply.replace(/User:.*AI:/s, "").trim();
 
-    return res.status(200).json({ reply });
+    res.status(200).json({ reply });
 
   } catch (err) {
-    console.error("SERVER ERROR:", err);
-    return res.status(500).json({ reply: "Server error" });
+    console.error("REAL ERROR:", err);
+    res.status(200).json({ reply: "ERROR: " + err.message });
   }
-}
+  }
