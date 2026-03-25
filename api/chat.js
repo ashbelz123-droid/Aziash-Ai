@@ -7,33 +7,37 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization": "Bearer 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", // make sure token is valid
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`, // 🔐 SECURE
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          inputs: `You are a calm, human-like love coach. Reply naturally.\nUser: ${message}\nAI:`,
-          options: { wait_for_model: true } // 🔥 force model to wake up
+          inputs: `You are Aziash AI, a calm, smart, human-like love coach. Speak naturally and help with relationships.\nUser: ${message}\nAI:`,
+          options: { wait_for_model: true },
+          parameters: {
+            temperature: 0.7,
+            max_new_tokens: 150
+          }
         })
       }
     );
 
     const data = await response.json();
-    console.log("HF response:", data); // Check what Hugging Face returns
+    console.log("HF response:", data);
 
     let reply = "";
 
-    // Handle multiple response types
     if (Array.isArray(data) && data[0]?.generated_text) {
       reply = data[0].generated_text;
     } else if (data?.generated_text) {
       reply = data.generated_text;
+    } else if (data?.error?.includes("loading")) {
+      reply = "Thinking… give me a second.";
     } else if (data?.error) {
-      reply = "AI is waking up... try again.";
+      reply = "AI is busy, try again.";
     } else {
       reply = "No response, try again.";
     }
 
-    // Clean text
     reply = reply.replace(/User:.*AI:/s, "").trim();
 
     res.status(200).json({ reply });
@@ -42,4 +46,4 @@ export default async function handler(req, res) {
     console.error(error);
     res.status(500).json({ reply: "Server error" });
   }
-}
+        }
