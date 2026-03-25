@@ -3,12 +3,13 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Love AI</title>
+
 <style>
-body { font-family: Arial; background:#0f172a; color:white; }
-#chat { padding:10px; }
-input { width:70%; padding:10px; }
-button { padding:10px; }
-.option { background:#1e293b; margin:5px; padding:8px; border-radius:6px; cursor:pointer; }
+body { font-family: Arial; background:#0f172a; color:white; padding:10px; }
+input { width:70%; padding:10px; border-radius:6px; border:none; }
+button { padding:10px; border:none; background:#22c55e; color:white; border-radius:6px; }
+.option { background:#1e293b; margin:6px 0; padding:10px; border-radius:6px; cursor:pointer; }
+.option:hover { background:#334155; }
 </style>
 </head>
 
@@ -22,50 +23,80 @@ button { padding:10px; }
 <div id="chat"></div>
 
 <script>
-const API_KEY = "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";
-
-async function send() {
+function send() {
   const input = document.getElementById("input").value;
   if (!input) return;
 
-  document.getElementById("chat").innerHTML = "Thinking...";
+  const result = generateSmartResponse(input);
+  display(result);
+}
 
-  const prompt = `
-Give:
-1 short advice
-3 short replies
+function generateSmartResponse(msg) {
+  msg = msg.toLowerCase();
 
-Message: "${input}"
+  // SIMPLE GREETINGS
+  if (msg.includes("hi") || msg.includes("hello")) {
+    return {
+      advice: "Keep it simple and friendly.",
+      replies: [
+        "Hey, how are you?",
+        "Hi, what’s up?",
+        "Hey there"
+      ]
+    };
+  }
 
-Rules:
-- Advice max 1 line
-- Replies short
-- Each reply on new line
-`;
+  // IGNORING / DRAMA
+  if (msg.includes("ignore")) {
+    return {
+      advice: "Stay calm. Don’t chase. Let her come.",
+      replies: [
+        "I’m not ignoring, just been busy.",
+        "Relax, I needed some time.",
+        "We’ll talk, no stress."
+      ]
+    };
+  }
 
-  const res = await fetch(
-    "https://api-inference.huggingface.co/models/google/flan-t5-base",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ inputs: prompt })
-    }
-  );
+  // LOVE QUESTIONS
+  if (msg.includes("love")) {
+    return {
+      advice: "Be honest but don’t overdo it.",
+      replies: [
+        "I care about you, I just don’t rush things.",
+        "You matter to me, just keeping it simple.",
+        "I’m here, just not loud about it."
+      ]
+    };
+  }
 
-  const data = await res.json();
-  const text = data[0].generated_text;
+  // ANGER / ARGUMENT
+  if (msg.includes("angry") || msg.includes("mad")) {
+    return {
+      advice: "Don’t react fast. Stay calm and controlled.",
+      replies: [
+        "Let’s not make it bigger than it is.",
+        "I hear you, let’s keep it calm.",
+        "No need to argue, we’ll sort it."
+      ]
+    };
+  }
 
-  const lines = text.split("\n").filter(l => l.trim() !== "");
+  // DEFAULT (SMART FALLBACK)
+  return {
+    advice: "Stay calm, be clear, don’t overreact.",
+    replies: [
+      "Alright, I hear you.",
+      "Let’s keep it simple.",
+      "No stress, we’ll talk."
+    ]
+  };
+}
 
-  const advice = lines[0] || "Stay calm.";
-  const replies = lines.slice(1, 4);
+function display(data) {
+  let html = `<p><b>Advice:</b> ${data.advice}</p>`;
 
-  let html = `<p><b>Advice:</b> ${advice}</p>`;
-
-  replies.forEach(r => {
+  data.replies.forEach(r => {
     html += `<div class="option">${r}</div>`;
   });
 
@@ -74,4 +105,4 @@ Rules:
 </script>
 
 </body>
-  </html>
+</html>
