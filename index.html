@@ -97,16 +97,14 @@ button {
 <script>
 
 // ===== STATE =====
-let stage = "start"; // start → chatting → deep
+let stage = "start";
 
 // ===== UI =====
 function addMessage(text, type) {
   const chat = document.getElementById("chat");
-
   const div = document.createElement("div");
   div.className = "msg " + type;
   div.innerText = text;
-
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -128,81 +126,154 @@ function getCoaching(stage) {
   return "Stay relaxed.";
 }
 
-// ===== BRAIN =====
+// ===== FULL LOVE BRAIN =====
 function generateSmartResponse(msg) {
   msg = msg.toLowerCase();
 
-  // START STAGE
-  if (stage === "start") {
-    if (msg.includes("hi") || msg.includes("hello")) {
-      stage = "chatting";
-      return {
-        advice: "Keep it simple and friendly.",
-        replies: [
-          "Hey, how are you?",
-          "Hi, what’s up?",
-          "Hey 😊"
-        ]
-      };
-    }
+  // LOVE
+  if (msg.includes("love") || msg.includes("like someone")) {
+    stage = "deep";
+    return {
+      advice: "Be calm and real. Don’t rush feelings.",
+      replies: [
+        randomPick(["I care about you, just keeping it simple"]),
+        randomPick(["I’m not rushing anything, just being real"]),
+        randomPick(["Let’s just enjoy it naturally"])
+      ]
+    };
   }
 
-  // CHAT STAGE
+  // IGNORING
+  if (msg.includes("ignore") || msg.includes("not replying")) {
+    stage = "deep";
+    return {
+      advice: "Don’t chase. Give space.",
+      replies: [
+        randomPick(["I’ve just been busy"]),
+        randomPick(["Not ignoring you, just needed time"]),
+        randomPick(["We’ll talk later, no stress"])
+      ]
+    };
+  }
+
+  // DISTANCE
+  if (msg.includes("distance") || msg.includes("pulling away") || msg.includes("changed")) {
+    stage = "deep";
+    return {
+      advice: "Stay calm and don’t pressure.",
+      replies: [
+        randomPick(["You’ve been a bit distant lately"]),
+        randomPick(["Everything okay with you?"]),
+        randomPick(["Just checking in, no pressure"])
+      ]
+    };
+  }
+
+  // JEALOUSY
+  if (msg.includes("jealous") || msg.includes("ex") || msg.includes("another")) {
+    stage = "deep";
+    return {
+      advice: "Stay in control. Don’t react emotionally.",
+      replies: [
+        randomPick(["I don’t do drama, I keep it simple"]),
+        randomPick(["I just observe, no pressure"]),
+        randomPick(["Let’s keep things clear"])
+      ]
+    };
+  }
+
+  // ARGUMENT
+  if (msg.includes("angry") || msg.includes("fight") || msg.includes("argue")) {
+    stage = "deep";
+    return {
+      advice: "Stay calm. Don’t escalate.",
+      replies: [
+        randomPick(["Let’s not make it bigger"]),
+        randomPick(["I hear you, let’s stay calm"]),
+        randomPick(["We’ll sort it out"])
+      ]
+    };
+  }
+
+  // STARTING CHAT
+  if (msg.includes("start") || msg.includes("first message")) {
+    stage = "chatting";
+    return {
+      advice: "Keep it simple and confident.",
+      replies: [
+        randomPick(["Hey, I wanted to say hi"]),
+        randomPick(["You seem interesting"]),
+        randomPick(["Hi, what’s up?"])
+      ]
+    };
+  }
+
+  // FLIRTING
+  if (msg.includes("flirt")) {
+    stage = "chatting";
+    return {
+      advice: "Be playful, not try-hard.",
+      replies: [
+        randomPick(["You’re trouble 😄"]),
+        randomPick(["I like your vibe"]),
+        randomPick(["You’re interesting"])
+      ]
+    };
+  }
+
+  // CONFUSION
+  if (msg.includes("confused") || msg.includes("mixed")) {
+    stage = "deep";
+    return {
+      advice: "Observe more, don’t chase clarity.",
+      replies: [
+        randomPick(["I’m just keeping things simple"]),
+        randomPick(["No pressure from me"]),
+        randomPick(["Let’s see how it goes"])
+      ]
+    };
+  }
+
+  // GREETING
+  if (stage === "start" && (msg.includes("hi") || msg.includes("hello"))) {
+    stage = "chatting";
+    return {
+      advice: "Keep it simple and friendly.",
+      replies: ["Hey 😊", "Hi, what’s up?", "Hey, how are you?"]
+    };
+  }
+
+  // NORMAL CHAT
   if (stage === "chatting") {
-
-    // detect deeper topics
-    if (
-      msg.includes("love") ||
-      msg.includes("ignore") ||
-      msg.includes("distance") ||
-      msg.includes("problem") ||
-      msg.includes("pulling away")
-    ) {
-      stage = "deep";
-    }
-
     return {
       advice: "Keep conversation flowing.",
       replies: [
-        randomPick(["Haha yeah", "That’s interesting", "I get you"]),
-        randomPick(["What have you been up to?", "Tell me more", "How was your day?"]),
-        randomPick(["You seem chill", "I like your vibe", "You’re easy to talk to"])
+        randomPick(["Haha yeah"]),
+        randomPick(["Tell me more"]),
+        randomPick(["You’re easy to talk to"])
       ]
     };
   }
 
-  // DEEP STAGE
+  // DEEP DEFAULT
   if (stage === "deep") {
     return {
-      advice: "Stay calm and don’t overreact.",
+      advice: "Stay calm and clear.",
       replies: [
-        randomPick([
-          "I understand where you're coming from",
-          "Let’s not overcomplicate it",
-          "We can sort it out"
-        ]),
-        randomPick([
-          "I’m just keeping things simple",
-          "No pressure from me",
-          "Let’s stay calm"
-        ]),
-        randomPick([
-          "We’ll talk it through",
-          "It’s not that serious",
-          "We’re good"
-        ])
+        randomPick(["I understand"]),
+        randomPick(["Let’s keep it simple"]),
+        randomPick(["We’ll figure it out"])
       ]
     };
   }
 
-  // DEFAULT
   return {
     advice: "Stay natural.",
     replies: ["Alright", "Okay", "I hear you"]
   };
 }
 
-// ===== MAIN SEND =====
+// ===== SEND =====
 function send() {
   const input = document.getElementById("input");
   const text = input.value;
@@ -216,17 +287,9 @@ function send() {
   const coach = getCoaching(stage);
   const best = pickBestReply(result.replies);
 
-  // Coach
-  setTimeout(() => {
-    addMessage("Coach: " + coach, "bot");
-  }, 300);
+  setTimeout(() => addMessage("Coach: " + coach, "bot"), 300);
+  setTimeout(() => addMessage("Best: " + best, "bot"), 600);
 
-  // Best Reply
-  setTimeout(() => {
-    addMessage("Best: " + best, "bot");
-  }, 600);
-
-  // Options
   setTimeout(() => {
     result.replies.forEach(reply => {
       const chat = document.getElementById("chat");
