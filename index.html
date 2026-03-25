@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love AI</title>
+<style>
+body { font-family: Arial; background:#0f172a; color:white; }
+#chat { padding:10px; }
+input { width:70%; padding:10px; }
+button { padding:10px; }
+.option { background:#1e293b; margin:5px; padding:8px; border-radius:6px; cursor:pointer; }
+</style>
+</head>
+
+<body>
+
+<h3>💬 Love AI</h3>
+
+<input id="input" placeholder="Type message..." />
+<button onclick="send()">Send</button>
+
+<div id="chat"></div>
+
+<script>
+const API_KEY = "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";
+
+async function send() {
+  const input = document.getElementById("input").value;
+  if (!input) return;
+
+  document.getElementById("chat").innerHTML = "Thinking...";
+
+  const prompt = `
+Give:
+1 short advice
+3 short replies
+
+Message: "${input}"
+
+Rules:
+- Advice max 1 line
+- Replies short
+- Each reply on new line
+`;
+
+  const res = await fetch(
+    "https://api-inference.huggingface.co/models/google/flan-t5-base",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: prompt })
+    }
+  );
+
+  const data = await res.json();
+  const text = data[0].generated_text;
+
+  const lines = text.split("\n").filter(l => l.trim() !== "");
+
+  const advice = lines[0] || "Stay calm.";
+  const replies = lines.slice(1, 4);
+
+  let html = `<p><b>Advice:</b> ${advice}</p>`;
+
+  replies.forEach(r => {
+    html += `<div class="option">${r}</div>`;
+  });
+
+  document.getElementById("chat").innerHTML = html;
+}
+</script>
+
+</body>
+  </html>
