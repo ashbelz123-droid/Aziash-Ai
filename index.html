@@ -7,7 +7,7 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #0f172a;
   color: white;
   display: flex;
@@ -25,37 +25,23 @@ header {
 #chat {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 10px;
 }
 
 .msg {
-  padding: 12px;
-  border-radius: 12px;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
   max-width: 80%;
 }
 
 .user {
   background: #2563eb;
-  align-self: flex-end;
+  margin-left: auto;
 }
 
 .bot {
   background: #1e293b;
-  align-self: flex-start;
-}
-
-.option {
-  background: #334155;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.option:hover {
-  background: #475569;
 }
 
 #inputBox {
@@ -66,18 +52,16 @@ header {
 
 input {
   flex: 1;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 6px;
   border: none;
-  outline: none;
 }
 
 button {
   margin-left: 10px;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
+  padding: 10px;
   background: #22c55e;
+  border: none;
   color: white;
 }
 </style>
@@ -90,16 +74,13 @@ button {
 <div id="chat"></div>
 
 <div id="inputBox">
-  <input id="input" placeholder="Type your situation..." />
+  <input id="input" placeholder="Type your message..." />
   <button onclick="send()">Send</button>
 </div>
 
 <script>
 
-// ===== STATE =====
-let stage = "start";
-
-// ===== UI =====
+// ADD MESSAGE
 function addMessage(text, type) {
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
@@ -109,172 +90,38 @@ function addMessage(text, type) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// ===== HELPERS =====
-function randomPick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+// ENTER KEY SUPPORT
+document.getElementById("input").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") send();
+});
 
-function pickBestReply(replies) {
-  return replies.sort((a, b) => a.length - b.length)[0];
-}
+// ===== REAL AI FUNCTION =====
+async function askAI(message) {
+  const response = await fetch(
+    "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": "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",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        inputs: `You are a smart, calm, human-like love coach. Speak naturally and give helpful, real advice.\nUser: ${message}\nAI:`
+      })
+    }
+  );
 
-// ===== COACH =====
-function getCoaching(stage) {
-  if (stage === "start") return "Start simple. Don’t try too hard.";
-  if (stage === "chatting") return "Keep it natural. Don’t overthink.";
-  if (stage === "deep") return "Stay calm. Don’t react emotionally.";
-  return "Stay relaxed.";
-}
+  const data = await response.json();
 
-// ===== FULL LOVE BRAIN =====
-function generateSmartResponse(msg) {
-  msg = msg.toLowerCase();
-
-  // LOVE
-  if (msg.includes("love") || msg.includes("like someone")) {
-    stage = "deep";
-    return {
-      advice: "Be calm and real. Don’t rush feelings.",
-      replies: [
-        randomPick(["I care about you, just keeping it simple"]),
-        randomPick(["I’m not rushing anything, just being real"]),
-        randomPick(["Let’s just enjoy it naturally"])
-      ]
-    };
+  if (data.error) {
+    return "AI is busy, try again...";
   }
 
-  // IGNORING
-  if (msg.includes("ignore") || msg.includes("not replying")) {
-    stage = "deep";
-    return {
-      advice: "Don’t chase. Give space.",
-      replies: [
-        randomPick(["I’ve just been busy"]),
-        randomPick(["Not ignoring you, just needed time"]),
-        randomPick(["We’ll talk later, no stress"])
-      ]
-    };
-  }
-
-  // DISTANCE
-  if (msg.includes("distance") || msg.includes("pulling away") || msg.includes("changed")) {
-    stage = "deep";
-    return {
-      advice: "Stay calm and don’t pressure.",
-      replies: [
-        randomPick(["You’ve been a bit distant lately"]),
-        randomPick(["Everything okay with you?"]),
-        randomPick(["Just checking in, no pressure"])
-      ]
-    };
-  }
-
-  // JEALOUSY
-  if (msg.includes("jealous") || msg.includes("ex") || msg.includes("another")) {
-    stage = "deep";
-    return {
-      advice: "Stay in control. Don’t react emotionally.",
-      replies: [
-        randomPick(["I don’t do drama, I keep it simple"]),
-        randomPick(["I just observe, no pressure"]),
-        randomPick(["Let’s keep things clear"])
-      ]
-    };
-  }
-
-  // ARGUMENT
-  if (msg.includes("angry") || msg.includes("fight") || msg.includes("argue")) {
-    stage = "deep";
-    return {
-      advice: "Stay calm. Don’t escalate.",
-      replies: [
-        randomPick(["Let’s not make it bigger"]),
-        randomPick(["I hear you, let’s stay calm"]),
-        randomPick(["We’ll sort it out"])
-      ]
-    };
-  }
-
-  // STARTING CHAT
-  if (msg.includes("start") || msg.includes("first message")) {
-    stage = "chatting";
-    return {
-      advice: "Keep it simple and confident.",
-      replies: [
-        randomPick(["Hey, I wanted to say hi"]),
-        randomPick(["You seem interesting"]),
-        randomPick(["Hi, what’s up?"])
-      ]
-    };
-  }
-
-  // FLIRTING
-  if (msg.includes("flirt")) {
-    stage = "chatting";
-    return {
-      advice: "Be playful, not try-hard.",
-      replies: [
-        randomPick(["You’re trouble 😄"]),
-        randomPick(["I like your vibe"]),
-        randomPick(["You’re interesting"])
-      ]
-    };
-  }
-
-  // CONFUSION
-  if (msg.includes("confused") || msg.includes("mixed")) {
-    stage = "deep";
-    return {
-      advice: "Observe more, don’t chase clarity.",
-      replies: [
-        randomPick(["I’m just keeping things simple"]),
-        randomPick(["No pressure from me"]),
-        randomPick(["Let’s see how it goes"])
-      ]
-    };
-  }
-
-  // GREETING
-  if (stage === "start" && (msg.includes("hi") || msg.includes("hello"))) {
-    stage = "chatting";
-    return {
-      advice: "Keep it simple and friendly.",
-      replies: ["Hey 😊", "Hi, what’s up?", "Hey, how are you?"]
-    };
-  }
-
-  // NORMAL CHAT
-  if (stage === "chatting") {
-    return {
-      advice: "Keep conversation flowing.",
-      replies: [
-        randomPick(["Haha yeah"]),
-        randomPick(["Tell me more"]),
-        randomPick(["You’re easy to talk to"])
-      ]
-    };
-  }
-
-  // DEEP DEFAULT
-  if (stage === "deep") {
-    return {
-      advice: "Stay calm and clear.",
-      replies: [
-        randomPick(["I understand"]),
-        randomPick(["Let’s keep it simple"]),
-        randomPick(["We’ll figure it out"])
-      ]
-    };
-  }
-
-  return {
-    advice: "Stay natural.",
-    replies: ["Alright", "Okay", "I hear you"]
-  };
+  return data[0]?.generated_text || "No response";
 }
 
 // ===== SEND =====
-function send() {
+async function send() {
   const input = document.getElementById("input");
   const text = input.value;
 
@@ -283,33 +130,19 @@ function send() {
   addMessage(text, "user");
   input.value = "";
 
-  const result = generateSmartResponse(text);
-  const coach = getCoaching(stage);
-  const best = pickBestReply(result.replies);
+  addMessage("Thinking...", "bot");
 
-  setTimeout(() => addMessage("Coach: " + coach, "bot"), 300);
-  setTimeout(() => addMessage("Best: " + best, "bot"), 600);
+  try {
+    let reply = await askAI(text);
 
-  setTimeout(() => {
-    result.replies.forEach(reply => {
-      const chat = document.getElementById("chat");
+    // clean response (remove prompt echo)
+    reply = reply.replace(/User:.*AI:/s, "").trim();
 
-      const option = document.createElement("div");
-      option.className = "option";
-      option.innerText = reply;
+    addMessage(reply, "bot");
 
-      if (reply === best) {
-        option.style.border = "2px solid #22c55e";
-      }
-
-      option.onclick = () => {
-        addMessage(reply, "user");
-        option.remove();
-      };
-
-      chat.appendChild(option);
-    });
-  }, 900);
+  } catch (err) {
+    addMessage("Error connecting to AI", "bot");
+  }
 }
 
 </script>
