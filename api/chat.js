@@ -11,16 +11,30 @@ export default async function handler(req, res) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          inputs: `You are a calm, human-like love coach. Talk naturally and give helpful advice.\nUser: ${message}\nAI:`
+          inputs: `You are a calm, human-like love coach. Reply naturally.\nUser: ${message}\nAI:`,
+          options: { wait_for_model: true } // 🔥 IMPORTANT FIX
         })
       }
     );
 
     const data = await response.json();
 
-    let reply = data[0]?.generated_text || "No response";
+    console.log(data); // debug (see logs in Vercel)
 
-    // clean output
+    let reply = "";
+
+    // ✅ HANDLE ALL RESPONSE TYPES
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      reply = data[0].generated_text;
+    } else if (data.generated_text) {
+      reply = data.generated_text;
+    } else if (data.error) {
+      reply = "AI is waking up... try again.";
+    } else {
+      reply = "No response, try again.";
+    }
+
+    // CLEAN TEXT
     reply = reply.replace(/User:.*AI:/s, "").trim();
 
     res.status(200).json({ reply });
